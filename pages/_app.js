@@ -1,14 +1,31 @@
-import React from 'react'
-import Meta from '../core/Meta'
-import '../styles/globals.css'
+import * as React from 'react';
+import PropTypes from 'prop-types';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import { CacheProvider } from '@emotion/react';
+import theme from '../muiSrc/theme';
+import createEmotionCache from '../muiSrc/createEmotionCache';
+import Meta from '../core/Meta';
 
-function MyApp({ Component, pageProps }) {
+
+const clientSideEmotionCache = createEmotionCache();
+
+export default function MyApp(props) {
+  const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
+
   return (
-  <React.Fragment>
-  <Meta/>
-  <Component {...pageProps} />
-  </React.Fragment>
-  )
+    <CacheProvider value={emotionCache}>
+      <Meta/>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Component {...pageProps} />
+      </ThemeProvider>
+    </CacheProvider>
+  );
 }
 
-export default MyApp
+MyApp.propTypes = {
+  Component: PropTypes.elementType.isRequired,
+  emotionCache: PropTypes.object,
+  pageProps: PropTypes.object.isRequired,
+};
