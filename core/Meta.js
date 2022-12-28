@@ -1,8 +1,8 @@
 import Head from 'next/head'
 
-const Meta = () => (
+const Meta = ({title}) => (
 	<Head>
-		<title>Ash</title>
+		<title>{title}</title>
 		<meta charSet='utf-8' />
 		<meta name='mobile-web-app-capable' content='yes' />
 		<meta name='apple-mobile-web-app-capable' content='yes' />

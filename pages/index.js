@@ -1,63 +1,78 @@
-import { Stack,Button ,Box, Typography, Paper, AppBar, Toolbar, Avatar} from '@mui/material'
-import Image from 'next/image';
-import Link from 'next/link';
-import React ,{useState}from 'react'
-import { MuiBackgroundDark, MuiBackgroundLight } from '../Style/MuiBackgroud'
 
 
+import React ,{useState,useEffect}from 'react'
+import dbConnect from '../lib/dbConnect'
+import Data from '../lib/Models/dataSchema'
+import DashboardBody from '../core/DashboardBody'
+import Loader from '../components/ErrorHandlers/Loader';
+import Login from '../components/session/Login';
+import { LogInContext } from '../core/SessionHandles/LoginContext';
 
-function index() {
-  const [dark, setdark] = useState(true);
 
+function index(props) {
+  const [data, setData] = useState({});
+  const [login, setLogin] = useState(false);
+  const [Loading, setLoading] = useState(true);
+  const [UserName ,setUserName] = useState("GOKU");
+
+  useEffect(() => {
+
+    if(props.data){
+      setData(props.data)
+    setTimeout(()=>{
+      setLoading(false);
+    },1000)
+    }
+  }, []);
+
+  if(Loading){
+    return <Loader/>
+  }
+
+  
+
+  
   return (
     <>
-    <AppBar sx={{boxShadow:"none"}}>
-      <Toolbar sx={{background:(!dark)?"#ffffff":"#1F2E3D",color:(dark)? "#ffffff":"#000000"}} >
+    <LogInContext.Provider value={{login,setLogin,UserName,setUserName}}>
+
+      {
+        (login)?
+
+        <DashboardBody data={data}/>
+        :
+        <Login/>
+      }
+      
+      </LogInContext.Provider>
+    </>
+      )  
+     
   
-        <Stack spacing="20px" direction={"row"} alignItems="center">
-        <Avatar 
-        src={"https://avatars.githubusercontent.com/u/46992681?s=400&u=6c3ba520be228c1d6d3bbb3917316188f6a15b9a&v=4"}
-        />
-        <Typography>Hello World!</Typography>
-        </Stack>
-      </Toolbar>
-    </AppBar>
-    <Box sx={(dark)? MuiBackgroundDark : MuiBackgroundLight}>
-        <Stack direction={{md:"row" , sm:"column"}} justifyContent="center" alignItems={"center"} spacing="20px">
-        <Image
-       src={'/assets/next-js.png'}
-       alt="pwa"
-       style={{filter:(!dark)? `invert(30%)` : ""}}
-       width={80}
-       height={80}
-       /> 
-      <Typography sx={{fontSize:"30px",fontWeight:"800"}}>WITH  </Typography>
-      <Image
-       src={'/assets/pwa.png'}
-       alt="pwa"
-       style={{filter:(!dark)? `invert(30%)` : ""}}
-       width={200}
-       height={100}
-       /> 
-      <Typography sx={{fontSize:"30px",fontWeight:"800"}}>AND </Typography>
-      <Image
-       src={'/assets/logo.png'}
-       alt="pwa"
-       
-       width={100}
-       height={100}
-       /> 
-       </Stack>
-      <Stack spacing={"20px"}>
-      <Button onClick={()=>{setdark(!dark)}} sx={{padding:"20px 30px",fontSize:"20px"}}>{(dark)? "LIGHT" : "DARK"}</Button>
-      <Stack>
-      <Typography>Checkout reference :</Typography>
-      <Link href="https://github.com/AshishSharma03/PWA-Next-MUI" style={{color:"#71A7DC"}}>https://github.com/AshishSharma03/PWA-Next-MUI</Link>
-      </Stack>
-      </Stack>
-    </Box>
-       </>
-  )
 }
 
+
+
+function convertDocToObj(doc) {
+  doc._id = doc._id.toString();
+  doc.createdAt = doc.createdAt.toString();
+  doc.updatedAt = doc.updatedAt.toString();
+  return doc;
+}
+
+
+export async function getServerSideProps(){
+
+  await dbConnect();
+  const data = await Data.find({}).lean();
+
+  return {props : { data:  data.map(convertDocToObj)}}
+
+}
+
+
+
 export default index
+
+
+
